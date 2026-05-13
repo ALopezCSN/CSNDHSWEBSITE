@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Digital Clock</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .clock {
+      color: #e5e7eb;
+      font-size: 4rem;
+      letter-spacing: 0.1em;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="clock" id="clock">--:--:--</div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours();
+      let m = now.getMinutes();
+      let s = now.getSeconds();
+
+      h = h.toString().padStart(2, "0");
+      m = m.toString().padStart(2, "0");
+      s = s.toString().padStart(2, "0");
+
+      document.getElementById("clock").textContent = `${h}:${m}:${s}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
