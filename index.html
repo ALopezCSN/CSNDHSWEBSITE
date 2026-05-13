@@ -1,1356 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>RDF / DHS / AVO System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>CSN Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root {
-      --rdf-color: #c62828;   /* red */
-      --dhs-color: #1565c0;   /* blue */
-      --avo-color: #2e7d32;   /* green */
-      --bg-dark: #05070a;
-      --bg-panel: #10141b;
-      --text-main: #f5f5f5;
-      --text-muted: #9ea4b3;
-      --accent: #00bcd4;
-      --danger: #ff5252;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: radial-gradient(circle at top, #1b2735 0, #090a0f 55%);
-      color: var(--text-main);
+      font-family: system-ui, sans-serif;
+      background: #020617;
+      color: #e5e7eb;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-
-    /* Generic layout */
-    .app-shell {
-      width: 100%;
-      max-width: 1200px;
-      min-height: 650px;
-      background: rgba(5, 7, 10, 0.92);
-      border-radius: 18px;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
-      overflow: hidden;
-      position: relative;
+    .page {
+      display: none;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
     }
-
-    .hidden {
-      display: none !important;
+    .page.active { display: block; }
+    h1, h2 {
+      color: #f9fafb;
+      margin-bottom: 1rem;
     }
-
-    /* LOGIN SCREEN */
-    #login-screen {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      padding: 60px 40px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at top, #151b26 0, #05070a 60%);
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    p.sub {
+      color: #9ca3af;
+      margin-bottom: 1.5rem;
     }
-
-    .login-panel {
-      width: 100%;
-      max-width: 420px;
-      background: rgba(10, 14, 22, 0.95);
-      border-radius: 16px;
-      padding: 32px 28px 26px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-title {
-      font-size: 1.1rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 8px;
-    }
-
-    .login-subtitle {
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    .field-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .input-row input {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(5, 7, 12, 0.9);
-      color: var(--text-main);
-      outline: none;
-      font-size: 0.95rem;
-    }
-
-    .input-row input:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
     .btn {
-      padding: 10px 18px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: 0.15s ease;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #020305;
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-    }
-
-    .login-status {
-      min-height: 18px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .login-status.error {
-      color: var(--danger);
-    }
-
-    .cooldown-timer {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* Red flash overlay */
-    .flash-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 0, 0, 0.25);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.18s ease-out;
-    }
-
-    .flash-overlay.active {
-      opacity: 1;
-    }
-
-    /* Welcome screen */
-    #welcome-screen {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top, #151b26 0, #05070a 60%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 20;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
-    }
-
-    #welcome-screen.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .welcome-text {
-      font-size: 1.8rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text-main);
-    }
-
-    .welcome-sub {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    /* MAIN APP */
-    #main-app {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
-    }
-
-    #main-app.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* Top bar */
-    .top-bar {
-      height: 54px;
-      background: rgba(5, 7, 12, 0.96);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 18px;
-      font-size: 0.85rem;
-    }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: var(--text-muted);
-    }
-
-    .top-right {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .top-label {
-      color: var(--text-muted);
-    }
-
-    .logout-btn {
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: transparent;
-      color: var(--text-main);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-    }
-
-    .logout-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    /* Main layout */
-    .main-body {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .sidebar {
-      width: 210px;
-      background: rgba(7, 10, 16, 0.98);
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-      padding: 16px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      font-size: 0.85rem;
-    }
-
-    .sidebar-section-title {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .nav-btn {
+      display: block;
       width: 100%;
-      text-align: left;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      color: var(--text-main);
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: 0.15s ease;
-    }
-
-    .nav-btn span {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-
-    .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .nav-btn.active {
-      background: rgba(0, 188, 212, 0.16);
-      border: 1px solid rgba(0, 188, 212, 0.6);
-    }
-
-    .content {
-      flex: 1;
-      padding: 18px 18px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow-y: auto;
-    }
-
-    .page-title {
+      text-align: center;
+      padding: 0.9rem 1rem;
+      margin: 0.4rem 0;
+      border-radius: 0.6rem;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
       font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 12px;
+    .btn:hover {
+      background: #111827;
+      border-color: #374151;
     }
-
-    .card {
-      background: rgba(10, 14, 22, 0.96);
-      border-radius: 12px;
-      padding: 12px 12px 10px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.85rem;
+    .btn-primary {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
     }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+    .btn-primary:hover {
+      background: #2563eb;
+      border-color: #2563eb;
     }
-
-    .card-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--text-muted);
+    .btn-return {
+      margin-top: 1.5rem;
+      background: #4b5563;
+      border-color: #4b5563;
     }
-
-    .tag {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: var(--text-muted);
+    .section-group {
+      margin-top: 1rem;
     }
-
-    .list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 4px;
+    label {
+      display: block;
+      margin: 0.4rem 0 0.15rem;
+      font-size: 0.9rem;
+      color: #cbd5f5;
     }
-
-    .list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      color: var(--text-main);
-    }
-
-    .list-label {
-      color: var(--text-muted);
-      font-size: 0.78rem;
-    }
-
-    .pill {
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: var(--text-muted);
-    }
-
-    /* Progress + checkmarks */
-    .req-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-    }
-
-    .req-label {
-      color: var(--text-muted);
-    }
-
-    .req-status {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.78rem;
-    }
-
-    .check {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-    }
-
-    .check.complete.rdf {
-      background: var(--rdf-color);
-      border-color: var(--rdf-color);
-    }
-
-    .check.complete.dhs {
-      background: var(--dhs-color);
-      border-color: var(--dhs-color);
-    }
-
-    .check.complete.avo {
-      background: var(--avo-color);
-      border-color: var(--avo-color);
-    }
-
-    .check.complete span {
-      color: #fff;
-    }
-
-    .check span {
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .progress-bar {
+    input, textarea {
       width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      overflow: hidden;
-      margin-top: 4px;
-      margin-bottom: 6px;
+      padding: 0.5rem 0.6rem;
+      border-radius: 0.4rem;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      resize: vertical;
     }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: inherit;
-      width: 0%;
-      transition: width 0.25s ease;
-    }
-
-    .progress-fill.rdf {
-      background: var(--rdf-color);
-    }
-
-    .progress-fill.dhs {
-      background: var(--dhs-color);
-    }
-
-    .progress-fill.avo {
-      background: var(--avo-color);
-    }
-
-    .progress-label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* Rank dropdowns */
-    .rank-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 4px;
-      font-size: 0.8rem;
-    }
-
-    .rank-row label {
-      width: 70px;
-      color: var(--text-muted);
-    }
-
-    select {
-      flex: 1;
-      padding: 4px 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: rgba(5, 7, 12, 0.9);
-      color: var(--text-main);
-      font-size: 0.8rem;
+    input:focus, textarea:focus {
       outline: none;
+      border-color: #2563eb;
     }
-
-    /* Notifications */
-    .toast-container {
-      position: absolute;
-      right: 14px;
-      bottom: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 30;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
     }
-
-    .toast {
-      background: rgba(10, 14, 22, 0.96);
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 0.78rem;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--text-main);
-      min-width: 200px;
-      animation: toast-in 0.2s ease-out;
+    th, td {
+      border: 1px solid #1f2937;
+      padding: 0.5rem;
+      text-align: left;
     }
-
-    @keyframes toast-in {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    th {
+      background: #020617;
+      color: #e5e7eb;
     }
-
-    /* Simple responsive */
-    @media (max-width: 900px) {
-      .app-shell {
-        border-radius: 0;
-        max-width: 100%;
-        min-height: 100vh;
-      }
-      .sidebar {
-        display: none;
-      }
+    tbody tr:nth-child(even) {
+      background: #020617;
+    }
+    .no-logs {
+      margin-top: 0.75rem;
+      color: #9ca3af;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen">
-      <div class="login-panel">
-        <div class="flash-overlay" id="flash-overlay"></div>
-        <div class="login-title">Secure Access</div>
-        <div class="login-subtitle">Restricted system — authorized personnel only</div>
 
-        <div class="field-label">Enter Access Code</div>
-        <div class="input-row">
-          <input
-            type="password"
-            id="access-code"
-            placeholder="•••••"
-            autocomplete="off"
-          />
-          <button class="btn btn-primary" id="unlock-btn">Unlock</button>
-        </div>
-        <div id="login-status" class="login-status"></div>
-        <div id="cooldown-text" class="cooldown-timer"></div>
-      </div>
-    </div>
+<!-- HOME -->
+<div id="home" class="page active">
+  <h1>Main Panel</h1>
+  <p class="sub">Mainlinks, Logs, Evaluation, and Full Evaluation in one place.</p>
 
-    <!-- WELCOME SCREEN -->
-    <div id="welcome-screen">
-      <div class="welcome-text">Welcome, Lopez</div>
-      <div class="welcome-sub">Initializing dashboard…</div>
-    </div>
+  <button class="btn btn-primary" onclick="openPage('mainlinks')">Mainlinks</button>
+  <button class="btn btn-primary" onclick="openPage('logs')">Logs</button>
+  <button class="btn btn-primary" onclick="openPage('eval')">Evaluation</button>
+  <button class="btn btn-primary" onclick="openPage('fullEval')">Full Evaluation</button>
+</div>
 
-    <!-- MAIN APP -->
-    <div id="main-app">
-      <div class="top-bar">
-        <div class="top-left">
-          <div class="badge">A. Lopez</div>
-          <div class="top-label" id="top-ranks">
-            RDF: Foxtrot • DHS: Private • AVO: Trainee
-          </div>
-        </div>
-        <div class="top-right">
-          <div class="top-label" id="top-time">EST — --:-- --</div>
-          <button class="logout-btn" id="logout-btn">Logout</button>
-        </div>
-      </div>
+<!-- MAINLINKS -->
+<div id="mainlinks" class="page">
+  <h2>Mainlinks</h2>
+  <p class="sub">Quick access to DHS, RDF, and AVO.</p>
 
-      <div class="main-body">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-          <div>
-            <div class="sidebar-section-title">Navigation</div>
-            <button class="nav-btn active" data-page="home">
-              Home <span>Dashboard</span>
-            </button>
-            <button class="nav-btn" data-page="evaluation">
-              Evaluation <span>Sheets</span>
-            </button>
-            <button class="nav-btn" data-page="full-eval">
-              Full Eval <span>Detail</span>
-            </button>
-            <button class="nav-btn" data-page="admin">
-              Admin View <span>Control</span>
-            </button>
-          </div>
-        </div>
+  <!-- Replace # with your real URLs -->
+  <a class="btn" href="#" target="_blank">DHS</a>
+  <a class="btn" href="#" target="_blank">RDF</a>
+  <a class="btn" href="#" target="_blank">AVO</a>
 
-        <!-- CONTENT -->
-        <div class="content">
-          <!-- HOME PAGE -->
-          <div id="page-home">
-            <div class="page-title">Home — Operations Overview</div>
-            <div class="grid" style="margin-top: 6px;">
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">Operations</div>
-                  <div class="tag">Clock & Logs</div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Clock Status</span>
-                    <span id="clock-status">Off Duty</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Current Session</span>
-                    <span id="clock-session">—</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Total This Week</span>
-                    <span id="clock-week">235 minutes</span>
-                  </div>
-                </div>
-                <div style="margin-top: 8px; display:flex; gap:6px;">
-                  <button class="btn btn-primary" id="clock-toggle">
-                    Clock In
-                  </button>
-                  <button
-                    class="btn"
-                    style="background:rgba(255,255,255,0.04);color:var(--text-muted);"
-                    onclick="showToast('Ride-along log opened (placeholder).')"
-                  >
-                    Ride-Along Logs
-                  </button>
-                </div>
-              </div>
+  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
+</div>
 
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">Today’s Summary</div>
-                  <div class="tag">Snapshot</div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Minutes Logged Today</span>
-                    <span>45</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Trainings Today</span>
-                    <span>1</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Ride-Alongs Today</span>
-                    <span>0</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Recruitments Today</span>
-                    <span>0</span>
-                  </div>
-                </div>
-              </div>
+<!-- LOGS -->
+<div id="logs" class="page">
+  <h2>Logs</h2>
+  <p class="sub">Training logs and ride along tracking.</p>
 
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">Mainlinks</div>
-                  <div class="tag">Quick Access</div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">RDF Mainlinks</span>
-                    <span class="pill">Uniforms • Fleet • SOP</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">AVO Mainlinks</span>
-                    <span class="pill">Fleet • Uniform • SOP</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">DHS Mainlinks</span>
-                    <span class="pill">Pending</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- These can be turned into real links later if you want -->
+  <button class="btn">DHS Training</button>
+  <button class="btn">RDF Training</button>
+  <button class="btn">AVO Training</button>
 
-          <!-- EVALUATION PAGE (RDF / DHS / AVO) -->
-          <div id="page-evaluation" class="hidden">
-            <div class="page-title">Evaluation — Division Sheets</div>
-            <div class="grid" style="margin-top: 6px;">
-              <!-- RDF -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">RDF Evaluation</div>
-                  <div class="tag" style="border-color:var(--rdf-color);color:var(--rdf-color);">
-                    RDF
-                  </div>
-                </div>
-                <div class="rank-row">
-                  <label>Rank</label>
-                  <select id="rdf-rank">
-                    <option>Foxtrot</option>
-                    <option>Echo</option>
-                    <option>Delta</option>
-                    <option>Charlie</option>
-                    <option>Bravo</option>
-                    <option>Alpha</option>
-                  </select>
-                </div>
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill rdf"
-                    id="rdf-hours-fill"
-                    style="width: 80%;"
-                  ></div>
-                </div>
-                <div class="progress-label">
-                  <span>Hours: 43 / 40</span>
-                  <span>80%</span>
-                </div>
+  <div class="section-group">
+    <h2>Ride Along Log</h2>
+    <p class="sub">Entries are saved on this device using local storage.</p>
 
-                <div class="req-row">
-                  <span class="req-label">Advisories: 1 / 1</span>
-                  <div class="req-status">
-                    <div class="check complete rdf"><span>✓</span></div>
-                    <span>Complete</span>
-                  </div>
-                </div>
-                <div class="req-row">
-                  <span class="req-label">Recruitments: 4 / 8</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>In Progress</span>
-                  </div>
-                </div>
-                <div class="req-row">
-                  <span class="req-label">Trainings: 1 / 4</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>In Progress</span>
-                  </div>
-                </div>
-              </div>
+    <form id="rideAlongForm" onsubmit="saveRideAlong(event)">
+      <label for="raDate">Date</label>
+      <input type="date" id="raDate" required>
 
-              <!-- DHS -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">DHS Evaluation</div>
-                  <div class="tag" style="border-color:var(--dhs-color);color:var(--dhs-color);">
-                    DHS
-                  </div>
-                </div>
-                <div class="rank-row">
-                  <label>Rank</label>
-                  <select id="dhs-rank">
-                    <option>Private</option>
-                    <option>Corporal</option>
-                    <option>Sergeant</option>
-                    <option>Lieutenant</option>
-                    <option>Captain</option>
-                  </select>
-                </div>
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill dhs"
-                    id="dhs-hours-fill"
-                    style="width: 60%;"
-                  ></div>
-                </div>
-                <div class="progress-label">
-                  <span>Hours: 24 / 40</span>
-                  <span>60%</span>
-                </div>
+      <label for="raOfficer">Officer / Unit</label>
+      <input type="text" id="raOfficer" placeholder="Unit / Officer name" required>
 
-                <div class="req-row">
-                  <span class="req-label">Trainings: 2 / 4</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>In Progress</span>
-                  </div>
-                </div>
-                <div class="req-row">
-                  <span class="req-label">Ride-Alongs: 1 / 4</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>In Progress</span>
-                  </div>
-                </div>
-              </div>
+      <label for="raNotes">Notes</label>
+      <textarea id="raNotes" rows="3" placeholder="Summary of ride along" required></textarea>
 
-              <!-- AVO -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">AVO Evaluation</div>
-                  <div class="tag" style="border-color:var(--avo-color);color:var(--avo-color);">
-                    AVO
-                  </div>
-                </div>
-                <div class="rank-row">
-                  <label>Rank</label>
-                  <select id="avo-rank">
-                    <option>Trainee</option>
-                    <option>Operator</option>
-                    <option>Senior Operator</option>
-                    <option>Specialist</option>
-                    <option>Supervisor</option>
-                    <option>Lieutenant</option>
-                    <option>First Lieutenant</option>
-                    <option>Captain</option>
-                    <option>Major</option>
-                  </select>
-                </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:0.7rem;">Save Ride Along</button>
+    </form>
 
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill avo"
-                    id="avo-hours-fill"
-                    style="width: 55%;"
-                  ></div>
-                </div>
-                <div class="progress-label">
-                  <span>Hours Since Last Promotion: 25 / 45</span>
-                  <span>55%</span>
-                </div>
+    <div id="rideAlongEmpty" class="no-logs">No ride alongs logged yet.</div>
 
-                <div class="req-row">
-                  <span class="req-label">FTAs/FTOs: 4 / 15</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>In Progress</span>
-                  </div>
-                </div>
-                <div class="req-row">
-                  <span class="req-label">Required Trainings (TASU / Port / Grappler)</span>
-                  <div class="req-status">
-                    <div class="check complete avo"><span>✓</span></div>
-                    <span>Complete</span>
-                  </div>
-                </div>
-                <div class="req-row">
-                  <span class="req-label">Wait Time Since Last Promotion</span>
-                  <div class="req-status">
-                    <div class="check complete avo"><span>✓</span></div>
-                    <span>Met</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- FULL EVAL PAGE -->
-          <div id="page-full-eval" class="hidden">
-            <div class="page-title">Full Evaluation — Detailed View</div>
-            <div class="grid" style="margin-top: 6px;">
-              <!-- RDF FULL -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">RDF Full Evaluation</div>
-                  <div class="tag" style="border-color:var(--rdf-color);color:var(--rdf-color);">
-                    RDF
-                  </div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Current Rank</span>
-                    <span id="rdf-rank-display">Foxtrot</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Days at Rank</span>
-                    <span>10</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Weekly Minutes</span>
-                    <span>235</span>
-                  </div>
-                </div>
-                <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;">
-                <div class="req-row">
-                  <span class="req-label">Promotion Eligibility</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>Not Currently Eligible</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- DHS FULL -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">DHS Full Evaluation</div>
-                  <div class="tag" style="border-color:var(--dhs-color);color:var(--dhs-color);">
-                    DHS
-                  </div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Current Rank</span>
-                    <span id="dhs-rank-display">Private</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Days at Rank</span>
-                    <span>5</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Weekly Minutes</span>
-                    <span>120</span>
-                  </div>
-                </div>
-                <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;">
-                <div class="req-row">
-                  <span class="req-label">Promotion Eligibility</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>Not Currently Eligible</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- AVO FULL -->
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">AVO Full Evaluation</div>
-                  <div class="tag" style="border-color:var(--avo-color);color:var(--avo-color);">
-                    AVO
-                  </div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Current Rank</span>
-                    <span id="avo-rank-display">Trainee</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Hours Since Last Promotion</span>
-                    <span>25 / 45</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">FTAs/FTOs in AVO Trainings</span>
-                    <span>4 / 15</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Required Trainings</span>
-                    <span>TASU • Port • Grappler</span>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Command Approval</span>
-                    <span>Pending</span>
-                  </div>
-                </div>
-                <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;">
-                <div class="req-row">
-                  <span class="req-label">Promotion Eligibility</span>
-                  <div class="req-status">
-                    <div class="check"><span>•</span></div>
-                    <span>Not Currently Eligible</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ADMIN PAGE -->
-          <div id="page-admin" class="hidden">
-            <div class="page-title">Admin View — Controls</div>
-            <div class="grid" style="margin-top: 6px;">
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">Rank Controls</div>
-                  <div class="tag">Manual</div>
-                </div>
-                <div class="rank-row">
-                  <label>RDF</label>
-                  <select id="rdf-rank-admin">
-                    <option>Foxtrot</option>
-                    <option>Echo</option>
-                    <option>Delta</option>
-                    <option>Charlie</option>
-                    <option>Bravo</option>
-                    <option>Alpha</option>
-                  </select>
-                </div>
-                <div class="rank-row">
-                  <label>DHS</label>
-                  <select id="dhs-rank-admin">
-                    <option>Private</option>
-                    <option>Corporal</option>
-                    <option>Sergeant</option>
-                    <option>Lieutenant</option>
-                    <option>Captain</option>
-                  </select>
-                </div>
-                <div class="rank-row">
-                  <label>AVO</label>
-                  <select id="avo-rank-admin">
-                    <option>Trainee</option>
-                    <option>Operator</option>
-                    <option>Senior Operator</option>
-                    <option>Specialist</option>
-                    <option>Supervisor</option>
-                    <option>Lieutenant</option>
-                    <option>First Lieutenant</option>
-                    <option>Captain</option>
-                    <option>Major</option>
-                  </select>
-                </div>
-                <button
-                  class="btn btn-primary"
-                  style="margin-top:8px;"
-                  id="apply-ranks"
-                >
-                  Apply Ranks
-                </button>
-              </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <div class="card-title">Time & Training</div>
-                  <div class="tag">Quick Actions</div>
-                </div>
-                <div class="list">
-                  <div class="list-item">
-                    <span class="list-label">Add 60 minutes to RDF</span>
-                    <button
-                      class="btn"
-                      style="background:rgba(255,255,255,0.04);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;"
-                      onclick="showToast('Added 60 minutes to RDF (placeholder).')"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Add AVO FTA</span>
-                    <button
-                      class="btn"
-                      style="background:rgba(255,255,255,0.04);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;"
-                      onclick="showToast('Added AVO FTA (placeholder).')"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Reset Weekly Logs</span>
-                    <button
-                      class="btn"
-                      style="background:rgba(255,255,255,0.04);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;"
-                      onclick="showToast('Weekly logs reset (placeholder).')"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                  <div class="list-item">
-                    <span class="list-label">Reset Evaluation Data</span>
-                    <button
-                      class="btn"
-                      style="background:rgba(255,255,255,0.04);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;"
-                      onclick="showToast('Evaluation data reset (placeholder).')"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- END CONTENT PAGES -->
-        </div>
-      </div>
-    </div>
-
-    <!-- TOASTS -->
-    <div class="toast-container" id="toast-container"></div>
+    <table id="rideAlongTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Officer / Unit</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="rideAlongBody"></tbody>
+    </table>
   </div>
 
-  <script>
-    // ===== PASSWORD GATE LOGIC =====
-    const PASSWORD = "47413";
-    const accessInput = document.getElementById("access-code");
-    const unlockBtn = document.getElementById("unlock-btn");
-    const loginStatus = document.getElementById("login-status");
-    const cooldownText = document.getElementById("cooldown-text");
-    const flashOverlay = document.getElementById("flash-overlay");
-    const loginScreen = document.getElementById("login-screen");
-    const welcomeScreen = document.getElementById("welcome-screen");
-    const mainApp = document.getElementById("main-app");
+  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
+</div>
 
-    let cooldownActive = false;
-    let cooldownRemaining = 0;
-    let cooldownInterval = null;
-    let flashInterval = null;
+<!-- EVALUATION -->
+<div id="eval" class="page">
+  <h2>Evaluation</h2>
+  <p class="sub">Quick access to evaluation forms.</p>
 
-    function startRedFlash() {
-      flashOverlay.classList.add("active");
-      setTimeout(() => {
-        flashOverlay.classList.remove("active");
-      }, 150);
+  <!-- Replace # with real eval links if you have them -->
+  <a class="btn" href="#" target="_blank">DHS Eval</a>
+  <a class="btn" href="#" target="_blank">RDF Eval</a>
+  <a class="btn" href="#" target="_blank">AVO Eval</a>
+
+  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
+</div>
+
+<!-- FULL EVALUATION -->
+<div id="fullEval" class="page">
+  <h2>Full Evaluation</h2>
+  <p class="sub">Full evaluation documents for each division.</p>
+
+  <!-- Replace # with real full eval links -->
+  <a class="btn" href="#" target="_blank">DHS FULL EVAL</a>
+  <a class="btn" href="#" target="_blank">RDF FULL EVAL</a>
+  <a class="btn" href="#" target="_blank">AVO FULL EVAL</a>
+
+  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
+</div>
+
+<script>
+  function openPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function loadRideAlongLogs() {
+    const data = localStorage.getItem('rideAlongLogs');
+    let logs = [];
+    if (data) {
+      try { logs = JSON.parse(data); } catch (e) { logs = []; }
+    }
+    const body = document.getElementById('rideAlongBody');
+    const table = document.getElementById('rideAlongTable');
+    const empty = document.getElementById('rideAlongEmpty');
+
+    body.innerHTML = '';
+    if (!logs.length) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      return;
     }
 
-    function startCooldown() {
-      cooldownActive = true;
-      cooldownRemaining = 5;
-      accessInput.disabled = true;
-      unlockBtn.disabled = true;
-      loginStatus.classList.add("error");
-      loginStatus.textContent = "Incorrect code. Try again in 5 seconds.";
-      cooldownText.textContent = "Cooldown: 5s";
+    logs.forEach(log => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${log.date}</td>
+        <td>${log.officer}</td>
+        <td>${log.notes}</td>
+      `;
+      body.appendChild(tr);
+    });
 
-      // Red flash every 2 seconds during cooldown
-      startRedFlash();
-      flashInterval = setInterval(() => {
-        startRedFlash();
-      }, 2000);
+    table.style.display = 'table';
+    empty.style.display = 'none';
+  }
 
-      cooldownInterval = setInterval(() => {
-        cooldownRemaining--;
-        if (cooldownRemaining <= 0) {
-          clearInterval(cooldownInterval);
-          clearInterval(flashInterval);
-          cooldownInterval = null;
-          flashInterval = null;
-          cooldownActive = false;
-          accessInput.disabled = false;
-          unlockBtn.disabled = false;
-          cooldownText.textContent = "";
-          loginStatus.textContent = "";
-        } else {
-          cooldownText.textContent = `Cooldown: ${cooldownRemaining}s`;
-        }
-      }, 1000);
+  function saveRideAlong(e) {
+    e.preventDefault();
+    const date = document.getElementById('raDate').value;
+    const officer = document.getElementById('raOfficer').value.trim();
+    const notes = document.getElementById('raNotes').value.trim();
+
+    if (!date || !officer || !notes) return;
+
+    const data = localStorage.getItem('rideAlongLogs');
+    let logs = [];
+    if (data) {
+      try { logs = JSON.parse(data); } catch (e) { logs = []; }
     }
 
-    function handleUnlock() {
-      if (cooldownActive) return;
-      const value = accessInput.value.trim();
-      if (value === PASSWORD) {
-        // Correct password
-        loginStatus.classList.remove("error");
-        loginStatus.textContent = "";
-        accessInput.value = "";
-        // Fade to welcome
-        loginScreen.style.display = "none";
-        welcomeScreen.classList.add("active");
-        setTimeout(() => {
-          welcomeScreen.classList.remove("active");
-          mainApp.classList.add("active");
-        }, 5000);
-      } else {
-        // Wrong password
-        startCooldown();
-      }
-    }
+    logs.push({ date, officer, notes });
+    localStorage.setItem('rideAlongLogs', JSON.stringify(logs));
 
-    unlockBtn.addEventListener("click", handleUnlock);
-    accessInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleUnlock();
-    });
+    document.getElementById('rideAlongForm').reset();
+    loadRideAlongLogs();
+  }
 
-    // ===== TOP TIME =====
-    const topTime = document.getElementById("top-time");
-    function updateTime() {
-      const now = new Date();
-      const options = {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: "America/New_York",
-      };
-      const timeStr = new Intl.DateTimeFormat("en-US", options).format(now);
-      topTime.textContent = `EST — ${timeStr}`;
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
+  // load logs on first open
+  loadRideAlongLogs();
+</script>
 
-    // ===== NAVIGATION =====
-    const navButtons = document.querySelectorAll(".nav-btn");
-    const pages = {
-      home: document.getElementById("page-home"),
-      evaluation: document.getElementById("page-evaluation"),
-      "full-eval": document.getElementById("page-full-eval"),
-      admin: document.getElementById("page-admin"),
-    };
-
-    navButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        navButtons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        const page = btn.dataset.page;
-        Object.keys(pages).forEach((key) => {
-          pages[key].classList.toggle("hidden", key !== page);
-        });
-      });
-    });
-
-    // ===== CLOCK IN / OUT (simple demo) =====
-    const clockToggle = document.getElementById("clock-toggle");
-    const clockStatus = document.getElementById("clock-status");
-    const clockSession = document.getElementById("clock-session");
-    let clockedIn = false;
-    let clockInTime = null;
-
-    clockToggle.addEventListener("click", () => {
-      if (!clockedIn) {
-        clockedIn = true;
-        clockInTime = new Date();
-        clockStatus.textContent = "On Duty";
-        clockToggle.textContent = "Clock Out";
-        clockSession.textContent = new Intl.DateTimeFormat("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-          timeZone: "America/New_York",
-        }).format(clockInTime) + " In — — Out";
-        showToast("Clocked in.");
-      } else {
-        const outTime = new Date();
-        const diffMin = Math.round((outTime - clockInTime) / 60000);
-        clockedIn = false;
-        clockStatus.textContent = "Off Duty";
-        clockToggle.textContent = "Clock In";
-        const inStr = new Intl.DateTimeFormat("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-          timeZone: "America/New_York",
-        }).format(clockInTime);
-        const outStr = new Intl.DateTimeFormat("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-          timeZone: "America/New_York",
-        }).format(outTime);
-        clockSession.textContent = `${inStr} In   ${outStr} Out   Total: ${diffMin} minutes`;
-        showToast(`Clocked out — ${diffMin} minutes logged (demo).`);
-      }
-    });
-
-    // ===== RANK SYNC (Admin -> Eval -> Full Eval) =====
-    const rdfRank = document.getElementById("rdf-rank");
-    const dhsRank = document.getElementById("dhs-rank");
-    const avoRank = document.getElementById("avo-rank");
-
-    const rdfRankAdmin = document.getElementById("rdf-rank-admin");
-    const dhsRankAdmin = document.getElementById("dhs-rank-admin");
-    const avoRankAdmin = document.getElementById("avo-rank-admin");
-
-    const rdfRankDisplay = document.getElementById("rdf-rank-display");
-    const dhsRankDisplay = document.getElementById("dhs-rank-display");
-    const avoRankDisplay = document.getElementById("avo-rank-display");
-    const topRanks = document.getElementById("top-ranks");
-
-    function syncRanksFromAdmin() {
-      rdfRank.value = rdfRankAdmin.value;
-      dhsRank.value = dhsRankAdmin.value;
-      avoRank.value = avoRankAdmin.value;
-
-      rdfRankDisplay.textContent = rdfRank.value;
-      dhsRankDisplay.textContent = dhsRank.value;
-      avoRankDisplay.textContent = avoRank.value;
-
-      topRanks.textContent = `RDF: ${rdfRank.value} • DHS: ${dhsRank.value} • AVO: ${avoRank.value}`;
-      showToast("Ranks updated.");
-    }
-
-    document.getElementById("apply-ranks").addEventListener("click", syncRanksFromAdmin);
-
-    // Also sync when dropdowns change on eval page
-    rdfRank.addEventListener("change", () => {
-      rdfRankAdmin.value = rdfRank.value;
-      rdfRankDisplay.textContent = rdfRank.value;
-      topRanks.textContent = `RDF: ${rdfRank.value} • DHS: ${dhsRank.value} • AVO: ${avoRank.value}`;
-      showToast("RDF rank changed.");
-    });
-    dhsRank.addEventListener("change", () => {
-      dhsRankAdmin.value = dhsRank.value;
-      dhsRankDisplay.textContent = dhsRank.value;
-      topRanks.textContent = `RDF: ${rdfRank.value} • DHS: ${dhsRank.value} • AVO: ${avoRank.value}`;
-      showToast("DHS rank changed.");
-    });
-    avoRank.addEventListener("change", () => {
-      avoRankAdmin.value = avoRank.value;
-      avoRankDisplay.textContent = avoRank.value;
-      topRanks.textContent = `RDF: ${rdfRank.value} • DHS: ${dhsRank.value} • AVO: ${avoRank.value}`;
-      showToast("AVO rank changed.");
-    });
-
-    // ===== TOASTS =====
-    const toastContainer = document.getElementById("toast-container");
-    function showToast(message) {
-      const toast = document.createElement("div");
-      toast.className = "toast";
-      toast.textContent = message;
-      toastContainer.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = "0";
-        setTimeout(() => toast.remove(), 200);
-      }, 2500);
-    }
-
-    // ===== LOGOUT =====
-    document.getElementById("logout-btn").addEventListener("click", () => {
-      mainApp.classList.remove("active");
-      loginScreen.style.display = "flex";
-      accessInput.value = "";
-      loginStatus.textContent = "";
-      cooldownText.textContent = "";
-      showToast("Logged out.");
-    });
-  </script>
 </body>
 </html>
