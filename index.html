@@ -1,272 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CSN Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, sans-serif;
-      background: #020617;
-      color: #e5e7eb;
-      min-height: 100vh;
-    }
-    .page {
-      display: none;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 3rem;
-    }
-    .page.active { display: block; }
-    h1, h2 {
-      color: #f9fafb;
-      margin-bottom: 1rem;
-    }
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    p.sub {
-      color: #9ca3af;
-      margin-bottom: 1.5rem;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      text-align: center;
-      padding: 0.9rem 1rem;
-      margin: 0.4rem 0;
-      border-radius: 0.6rem;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 1rem;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .btn:hover {
-      background: #111827;
-      border-color: #374151;
-    }
-    .btn-primary {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-    }
-    .btn-primary:hover {
-      background: #2563eb;
-      border-color: #2563eb;
-    }
-    .btn-return {
-      margin-top: 1.5rem;
-      background: #4b5563;
-      border-color: #4b5563;
-    }
-    .section-group {
-      margin-top: 1rem;
-    }
-    label {
-      display: block;
-      margin: 0.4rem 0 0.15rem;
-      font-size: 0.9rem;
-      color: #cbd5f5;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 0.5rem 0.6rem;
-      border-radius: 0.4rem;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 0.95rem;
-      resize: vertical;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #2563eb;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-    th, td {
-      border: 1px solid #1f2937;
-      padding: 0.5rem;
-      text-align: left;
-    }
-    th {
-      background: #020617;
-      color: #e5e7eb;
-    }
-    tbody tr:nth-child(even) {
-      background: #020617;
-    }
-    .no-logs {
-      margin-top: 0.75rem;
-      color: #9ca3af;
-      font-size: 0.9rem;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RDF | RAPID DEPLOYMENT FORCE</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#d4af37;
+  --gold-dark:#aa8c2c;
+  --gold-soft: rgba(212,175,55,0.10);
+  --bg:#000;
+  --text:#fff;
+  --muted:#a0a0a0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Playfair Display',serif;background:linear-gradient(180deg,#050505,#111);color:var(--text)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:340px;background:linear-gradient(135deg,rgba(20,20,20,0.95),rgba(8,8,8,0.98));padding:3rem 0;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(212,175,55,0.12)}
+.brand{padding:0 2.5rem}
+.brand h1{font-family:'Cinzel',serif;font-size:1.8rem;letter-spacing:6px;background:linear-gradient(135deg,var(--gold-soft),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand p{color:var(--muted);font-size:.7rem;letter-spacing:4px;margin-top:.5rem;text-transform:uppercase}
+.nav-menu{padding:0 1.5rem;display:flex;flex-direction:column;gap:.8rem}
+.nav-item{position:relative;padding:1.4rem 1.6rem;font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:3px;color:var(--muted);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .3s;transform:skewX(-15deg) translateX(20px)}
+.nav-item span{display:inline-block;transform:skewX(15deg)}
+.nav-item::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:linear-gradient(180deg,var(--gold),var(--gold-dark));transform:scaleY(0);transition:transform .25s;transform-origin:center}
+.nav-item:hover{color:var(--gold);background:rgba(255,255,255,0.02);border-color:rgba(212,175,55,0.08);transform:skewX(-15deg) translateX(10px)}
+.nav-item:hover::before{transform:scaleY(1)}
+.nav-item.active{color:var(--gold);background:linear-gradient(90deg,rgba(212,175,55,0.12),transparent);border-color:rgba(212,175,55,0.16);transform:skewX(-15deg) translateX(0)}
+.sidebar-footer{padding:0 2.5rem}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.28;margin-bottom:1.5rem}
+.status{display:flex;align-items:center;gap:.8rem}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.status-text{color:var(--muted);font-size:.75rem;letter-spacing:2px;text-transform:uppercase}
+
+/* Main content */
+.main{flex:1;padding:3.5rem 4.5rem;overflow:auto;position:relative}
+.page-header{margin-bottom:2rem;border-bottom:1px solid rgba(212,175,55,0.12);padding-bottom:1.25rem}
+.page-title{font-family:'Cinzel',serif;font-size:2.8rem;background:linear-gradient(135deg,#fff,var(--gold-soft),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-subtitle{color:var(--muted);font-size:.85rem;letter-spacing:4px;margin-top:.5rem;text-transform:uppercase}
+
+/* sections */
+.content-section{display:none}
+.content-section.active{display:block}
+
+/* Card styles for FBI TIMECLOCK */
+.link-box-wrap{display:flex;justify-content:center;padding:1rem 0}
+.filled-card{
+  width:100%;
+  max-width:720px;
+  border-radius:10px;
+  background:linear-gradient(180deg, rgba(212,175,55,0.95), rgba(170,140,44,0.95));
+  color:#07110a;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.25);
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:1.2rem 1.25rem;
+  transition:transform .18s ease,box-shadow .18s ease,opacity .18s;
+  cursor:pointer;
+  text-decoration:none;
+  border:1px solid rgba(0,0,0,0.25);
+  user-select:none;
+}
+/* whole card clickable behavior: anchor wraps the card (see HTML) */
+.filled-card:hover{transform:translateY(-6px);box-shadow:0 22px 70px rgba(0,0,0,0.7)}
+
+/* left icon */
+.card-icon{min-width:64px;min-height:64px;width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,rgba(255,255,255,0.6),rgba(255,255,255,0.35));display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -6px 12px rgba(0,0,0,0.12)}
+.card-icon svg{width:36px;height:36px;fill:var(--gold-dark)}
+
+/* text */
+.card-body{display:flex;flex-direction:column;gap:4px;min-width:0}
+.card-title{font-family:'Cinzel',serif;font-size:1.05rem;letter-spacing:2px;text-transform:uppercase;color:#07110a}
+.card-sub{font-size:1.0rem;color:#07110a;font-weight:600;word-break:break-all}
+
+/* Roster embed */
+.embed-wrap{margin-top:1.25rem}
+.sheet-frame{width:100%;height:74vh;border:1px solid rgba(212,175,55,0.12);border-radius:8px;background:#000;display:block}
+
+/* fallback note */
+.fallback{color:var(--muted);font-size:.9rem;margin-top:.6rem}
+
+/* responsive */
+@media(max-width:900px){
+  .main{padding:2rem}
+  .filled-card{padding:.9rem;gap:.75rem}
+  .card-icon{width:54px;height:54px;min-width:54px;min-height:54px}
+}
+</style>
 </head>
 <body>
+<div class="app">
+  <nav class="sidebar">
+    <div>
+      <div class="brand">
+        <h1>FBI SWAT</h1>
+        <p>DEPLOYMENT</p>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-item active" onclick="go('home',this)"><span>Mission Brief</span></button>
+        <button class="nav-item" onclick="go('heads',this)"><span>Heads Team</span></button>
+        <button class="nav-item" onclick="go('links',this)"><span>Directives</span></button>
+        <button class="nav-item" onclick="go('fbi-site',this)"><span>FBI WEBSITE</span></button>
+        <button class="nav-item" onclick="go('roster',this)"><span>Roster</span></button>
+        <button class="nav-item" onclick="go('leadership',this)"><span>Leadership</span></button>
+      </div>
+    </div>
 
-<!-- HOME -->
-<div id="home" class="page active">
-  <h1>Main Panel</h1>
-  <p class="sub">Mainlinks, Logs, Evaluation, and Full Evaluation in one place.</p>
+    <div class="sidebar-footer">
+      <div class="divider"></div>
+      <div class="status">
+        <div class="status-dot"></div>
+        <span class="status-text">Secure Connection</span>
+      </div>
+    </div>
+  </nav>
 
-  <button class="btn btn-primary" onclick="openPage('mainlinks')">Mainlinks</button>
-  <button class="btn btn-primary" onclick="openPage('logs')">Logs</button>
-  <button class="btn btn-primary" onclick="openPage('eval')">Evaluation</button>
-  <button class="btn btn-primary" onclick="openPage('fullEval')">Full Evaluation</button>
-</div>
+  <main class="main">
+    <section id="home" class="content-section active">
+      <div class="page-header">
+        <h2 class="page-title">MISSION BRIEF</h2>
+        <p class="page-subtitle">FBI SWAT</p>
+      </div>
+      <div style="min-height:30vh"></div>
+    </section>
 
-<!-- MAINLINKS -->
-<div id="mainlinks" class="page">
-  <h2>Mainlinks</h2>
-  <p class="sub">Quick access to DHS, RDF, and AVO.</p>
+    <section id="heads" class="content-section">
+      <div class="page-header"><h2 class="page-title">HEADS TEAM</h2><p class="page-subtitle">Unit Leadership</p></div>
+      <div style="padding:0 1rem">
+        <!-- existing content omitted for brevity -->
+        <div class="card-body">
+          <div style="font-family:'Cinzel',serif;font-size:1.6rem;color:var(--gold);">Commander — [S-01] Ghost</div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Replace # with your real URLs -->
-  <a class="btn" href="#" target="_blank">DHS</a>
-  <a class="btn" href="#" target="_blank">RDF</a>
-  <a class="btn" href="#" target="_blank">AVO</a>
+    <section id="links" class="content-section">
+      <div class="page-header"><h2 class="page-title">DIRECTIVES</h2><p class="page-subtitle">Click The Links</p></div>
+      <div style="padding:0 1rem">
+        <!-- existing cards -->
+      </div>
+    </section>
 
-  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
-</div>
+    <!-- FBI WEBSITE section: filled clickable box labeled "FBI TIMECLOCK" -->
+    <section id="fbi-site" class="content-section">
+      <div class="page-header"><h2 class="page-title">FBI WEBSITE</h2><p class="page-subtitle">Time & Attendance</p></div>
 
-<!-- LOGS -->
-<div id="logs" class="page">
-  <h2>Logs</h2>
-  <p class="sub">Training logs and ride along tracking.</p>
+      <div class="link-box-wrap">
+        <!-- The anchor wraps the entire card so the whole box is clickable and hover works anywhere -->
+        <a class="filled-card" href="https://time.csnfib.com/en/timesheet/" target="_blank" rel="noopener" title="Open FBI Timeclock">
+          <div class="card-icon" aria-hidden="true">
+            <!-- clock icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm1 11.414V7h-2v6.414L12.586 15 13 13.414z"/>
+            </svg>
+          </div>
 
-  <!-- These can be turned into real links later if you want -->
-  <button class="btn">DHS Training</button>
-  <button class="btn">RDF Training</button>
-  <button class="btn">AVO Training</button>
+          <div class="card-body">
+            <div class="card-title">FBI TIMECLOCK</div>
+            <div class="card-sub">Click anywhere on this box to open the timeclock (opens in a new tab)</div>
+          </div>
+        </a>
+      </div>
+    </section>
 
-  <div class="section-group">
-    <h2>Ride Along Log</h2>
-    <p class="sub">Entries are saved on this device using local storage.</p>
+    <!-- ROSTER tab: embeds the Google Sheet. For live updates, the sheet should be published or shared appropriately. -->
+    <section id="roster" class="content-section">
+      <div class="page-header"><h2 class="page-title">ROSTER</h2><p class="page-subtitle">Personnel Roster</p></div>
 
-    <form id="rideAlongForm" onsubmit="saveRideAlong(event)">
-      <label for="raDate">Date</label>
-      <input type="date" id="raDate" required>
+      <div class="embed-wrap">
+        <!-- Embedded sheet: uses the published-to-web form. If the sheet is not published, users may need to sign in or the iframe might not show. -->
+        <iframe
+          class="sheet-frame"
+          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-pubhtml?gid=2072320874&single=true&widget=true&headers=false"
+          title="Roster Sheet"
+          allowfullscreen
+        ></iframe>
 
-      <label for="raOfficer">Officer / Unit</label>
-      <input type="text" id="raOfficer" placeholder="Unit / Officer name" required>
+        <div class="fallback">
+          If the sheet does not load here (requires the sheet to be published/shared), open it directly:
+          <br>
+          <a href="https://docs.google.com/spreadsheets/d/1NlMNkRBtJ3yLpd_Bj2JePvBRMzwROPiehRz91MP3TXU/edit?gid=2072320874" target="_blank" rel="noopener" style="color:var(--gold)">{Open ROSTER in new tab}</a>
+        </div>
+      </div>
+    </section>
 
-      <label for="raNotes">Notes</label>
-      <textarea id="raNotes" rows="3" placeholder="Summary of ride along" required></textarea>
+    <section id="leadership" class="content-section">
+      <div class="page-header"><h2 class="page-title">LEADERSHIP</h2><p class="page-subtitle">Training Resources</p></div>
+      <div style="padding:0 1rem">
+        <!-- placeholder -->
+      </div>
+    </section>
 
-      <button type="submit" class="btn btn-primary" style="margin-top:0.7rem;">Save Ride Along</button>
-    </form>
-
-    <div id="rideAlongEmpty" class="no-logs">No ride alongs logged yet.</div>
-
-    <table id="rideAlongTable" style="display:none;">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Officer / Unit</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody id="rideAlongBody"></tbody>
-    </table>
-  </div>
-
-  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
-</div>
-
-<!-- EVALUATION -->
-<div id="eval" class="page">
-  <h2>Evaluation</h2>
-  <p class="sub">Quick access to evaluation forms.</p>
-
-  <!-- Replace # with real eval links if you have them -->
-  <a class="btn" href="#" target="_blank">DHS Eval</a>
-  <a class="btn" href="#" target="_blank">RDF Eval</a>
-  <a class="btn" href="#" target="_blank">AVO Eval</a>
-
-  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
-</div>
-
-<!-- FULL EVALUATION -->
-<div id="fullEval" class="page">
-  <h2>Full Evaluation</h2>
-  <p class="sub">Full evaluation documents for each division.</p>
-
-  <!-- Replace # with real full eval links -->
-  <a class="btn" href="#" target="_blank">DHS FULL EVAL</a>
-  <a class="btn" href="#" target="_blank">RDF FULL EVAL</a>
-  <a class="btn" href="#" target="_blank">AVO FULL EVAL</a>
-
-  <button class="btn btn-return" onclick="openPage('home')">Return Home Page</button>
+  </main>
 </div>
 
 <script>
-  function openPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0, 0);
-  }
-
-  function loadRideAlongLogs() {
-    const data = localStorage.getItem('rideAlongLogs');
-    let logs = [];
-    if (data) {
-      try { logs = JSON.parse(data); } catch (e) { logs = []; }
-    }
-    const body = document.getElementById('rideAlongBody');
-    const table = document.getElementById('rideAlongTable');
-    const empty = document.getElementById('rideAlongEmpty');
-
-    body.innerHTML = '';
-    if (!logs.length) {
-      table.style.display = 'none';
-      empty.style.display = 'block';
-      return;
-    }
-
-    logs.forEach(log => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${log.date}</td>
-        <td>${log.officer}</td>
-        <td>${log.notes}</td>
-      `;
-      body.appendChild(tr);
-    });
-
-    table.style.display = 'table';
-    empty.style.display = 'none';
-  }
-
-  function saveRideAlong(e) {
-    e.preventDefault();
-    const date = document.getElementById('raDate').value;
-    const officer = document.getElementById('raOfficer').value.trim();
-    const notes = document.getElementById('raNotes').value.trim();
-
-    if (!date || !officer || !notes) return;
-
-    const data = localStorage.getItem('rideAlongLogs');
-    let logs = [];
-    if (data) {
-      try { logs = JSON.parse(data); } catch (e) { logs = []; }
-    }
-
-    logs.push({ date, officer, notes });
-    localStorage.setItem('rideAlongLogs', JSON.stringify(logs));
-
-    document.getElementById('rideAlongForm').reset();
-    loadRideAlongLogs();
-  }
-
-  // load logs on first open
-  loadRideAlongLogs();
+function go(id, btn){
+  document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn && btn.classList) btn.classList.add('active');
+}
+/* helper: make nav item corresponding to default visible (home) active on load */
+document.addEventListener('DOMContentLoaded',()=>{ const first = document.querySelector('.nav-item.active'); if(!first){ const btn = document.querySelector('.nav-item'); if(btn) btn.classList.add('active') }});
 </script>
-
 </body>
 </html>
